@@ -11,11 +11,11 @@ def main():
     size_of_array = 10
 
     data = [i for i in range(size_of_array)]
-    #random.shuffle(data)
+    random.shuffle(data)
     order = data.copy()
     random.shuffle(data)
 
-    data = [7, 3, 1, 0, 8, 2, 5, 9, 4, 6]
+    #data = [7, 3, 1, 0, 8, 2, 5, 9, 4, 6]
 
     print(f"{order=}")
     print(f"{data=}")
@@ -53,11 +53,9 @@ def sort(data, order):
     # the elements in biog are already sorted so they will not move
     # all the other elements needed to be sorted accordingly
 
+    unsorted_data = [e for e in data if e not in biog]
     # find indices of nonsorted elements
-    unsorted_indices = []
-    for idx,element in enumerate(data):
-        if element not in biog:
-            unsorted_indices.append(idx)
+    unsorted_indices = find_unsorted_indices(data, unsorted_data)
 
     print(f"{unsorted_indices=}")
 
@@ -68,27 +66,34 @@ def sort(data, order):
 
     # sort the unsorted elements, keeping a record of operations performed
     sorting_ops = []
-    for i in unsorted_indices:
+    while unsorted_indices: # is not empty
         # translate the order for this element
         # order index is where the current unsorted index (i) is located in the final sorted list
+        i = unsorted_indices[0]
         order_idx = order.index(data[i])
 
         # find where this element should be moved relatived to the sorted group
         if order_idx < biog_order[0]: # special case for beginning of list
             move(sorting_ops,data,i,0,unsorted_indices)
+            unsorted_data.pop(0)
+            unsorted_indices = find_unsorted_indices(data, unsorted_data)
         else:
-            prev = biog_order[0]
+            prev = biog_order[0] # todo update biog on every move
             for s in biog_order[1:]:
                 next = s
                 if order_idx < next:
                     new_idx = data.index(prev)
                     move(sorting_ops,data,i,new_idx,unsorted_indices)
+                    unsorted_data.pop(0)
+                    unsorted_indices = find_unsorted_indices(data, unsorted_data)
                     break
                 prev = next
             else: # special case for end of list
                 new_idx = data.index(next)+1
                 move(sorting_ops,data,i,new_idx,unsorted_indices)
-            
+                unsorted_data.pop(0)
+                unsorted_indices = find_unsorted_indices(data, unsorted_data)
+
         print()
         print(f"{sorting_ops=}")
         print(f"{data=}")
@@ -98,8 +103,16 @@ def sort(data, order):
 
     print(f"{data=}")
     print(f"{sorting_ops=}")
-            
-        
+
+
+
+def find_unsorted_indices(data, unsorted_data):
+    unsorted_indices = []
+    for idx,element in enumerate(data):
+        if element in unsorted_data:
+            unsorted_indices.append(idx)
+    return unsorted_indices
+
 
 def move(sorting_ops, data, old_idx, new_idx, unsorted_indices):
     sorting_ops.append(("mov", old_idx, new_idx))
