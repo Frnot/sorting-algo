@@ -11,18 +11,21 @@ def main():
     size_of_array = 10
 
     data = [i for i in range(size_of_array)]
-    random.shuffle(data)
+    #random.shuffle(data)
     order = data.copy()
     random.shuffle(data)
 
-    #data = [7, 3, 1, 0, 8, 2, 5, 9, 4, 6]
+    #data=[4, 3, 2, 0, 1]
 
     print(f"{order=}")
     print(f"{data=}")
 
     
 
-    biog = sort(data, order) 
+    ordered = sort(data, order) 
+    print(ordered)
+
+    return order,ordered
 
 
 
@@ -41,68 +44,53 @@ def sort(data, order):
         if len(group) > len(biog):
             biog = group
 
-    # find the final indices these elements will have:
-    biog_order = []
-    for element in biog:
-        biog_order.append(order.index(element))
-
     print(f"{biog=}")
-    print(f"{biog_order=}")
 
 
-    # the elements in biog are already sorted so they will not move
-    # all the other elements needed to be sorted accordingly
+    #element index equals value for first version
+    inorder_elements = biog
+    outorder_elements = [e for e in data if e not in inorder_elements]
 
-    unsorted_data = [e for e in data if e not in biog]
-    # find indices of nonsorted elements
-    unsorted_indices = find_unsorted_indices(data, unsorted_data)
+    print(f"{outorder_elements=}")
 
-    print(f"{unsorted_indices=}")
+    for element in outorder_elements:
+        ooi = data.index(element)
 
-
-    ###### TODO:
-    # everytime un unsorted list is sorted, a new list of sorted items needs to be generated
-    # and the list of unsorted indices needs to be updated
-
-    # sort the unsorted elements, keeping a record of operations performed
-    sorting_ops = []
-    while unsorted_indices: # is not empty
-        # translate the order for this element
-        # order index is where the current unsorted index (i) is located in the final sorted list
-        i = unsorted_indices[0]
-        order_idx = order.index(data[i])
-
-        # find where this element should be moved relatived to the sorted group
-        if order_idx < biog_order[0]: # special case for beginning of list
-            move(sorting_ops,data,i,0,unsorted_indices)
-            unsorted_data.pop(0)
-            unsorted_indices = find_unsorted_indices(data, unsorted_data)
+        next = inorder_elements[0]
+        if element < next:
+            # move to front
+            # data.insert(new_idx, data.pop(old_idx))
+            print(f"mov {ooi}, 0")
+            data.insert(0, data.pop(ooi))
+            inorder_elements.insert(0, element)
+            print(f"{data=}")
+            print(f"{inorder_elements=}")
+            continue
+        prev = next
+        for ioi,next in enumerate(inorder_elements[1:],start=1):
+            if element > prev and element < next:
+                # move to just after prev
+                if data.index(prev) < ooi:
+                    print(f"mov {ooi}, {data.index(prev)+1}")
+                    data.insert(data.index(prev)+1, data.pop(ooi))
+                else:
+                    print(f"mov {ooi}, {data.index(prev)}")
+                    data.insert(data.index(prev), data.pop(ooi))
+                inorder_elements.insert(ioi, element)
+                print(f"{data=}")
+                print(f"{inorder_elements=}")
+                break
+            prev = next
         else:
-            prev = biog_order[0] # todo update biog on every move
-            for s in biog_order[1:]:
-                next = s
-                if order_idx < next:
-                    new_idx = data.index(prev)
-                    move(sorting_ops,data,i,new_idx,unsorted_indices)
-                    unsorted_data.pop(0)
-                    unsorted_indices = find_unsorted_indices(data, unsorted_data)
-                    break
-                prev = next
-            else: # special case for end of list
-                new_idx = data.index(next)+1
-                move(sorting_ops,data,i,new_idx,unsorted_indices)
-                unsorted_data.pop(0)
-                unsorted_indices = find_unsorted_indices(data, unsorted_data)
+            # move to back
+            print(f"mov {ooi}, {len(data)}")
+            data.append(data.pop(ooi))
+            inorder_elements.append(element)
+            print(f"{data=}")
+            print(f"{inorder_elements=}")
+        
 
-        print()
-        print(f"{sorting_ops=}")
-        print(f"{data=}")
-        print(f"{unsorted_indices=}")
-
-    #TODO regenerate out of order indices every time we make a move
-
-    print(f"{data=}")
-    print(f"{sorting_ops=}")
+    return data
 
 
 
@@ -164,4 +152,11 @@ def biggest_inorder_group(partial_list):
 
 
 if __name__ == "__main__":
-    main()
+    for _ in range(10000):
+        order,ordered = main()
+        if order != ordered:
+            print("mismatch")
+            break
+    else:
+        print("no errors found")
+    input()
