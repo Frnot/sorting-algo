@@ -20,17 +20,35 @@ def main(existing, update):
         else:
             idx += 1
 
-    print(f"{ops=}")
     print(f"{existing=}")
+    print(f"{update=}")
     
 
-    #existing, operations = sort(existing, update)
-    pass
+    # Step 2: sort existing items
+    existing, operations = sort(existing, update)
+
+    ops.extend(operations)
+    
+    print(f"{existing=}")
+    print(f"{ops=}")
+
+
+    # Step 3: add missing items to the correct indexes
+    for idx,e in enumerate(update):
+        if e not in existing:
+            ops.append(("add", e, idx))
+            existing.insert(idx, e)
+
+    print(f"{existing=}")
+    print(f"{ops=}")
+
+    return ops
+
+
 
 
 def sort(unsorted, sorted):
-    """unsorted and sorted should be equal sets
-    
+    """    
     items in unsorted listed are mapped to their correct position in the sorted list
     an unsorted item's position in the sorted list is reffered to as ordval
     
@@ -45,14 +63,70 @@ def sort(unsorted, sorted):
         E : 3
     """
 
+    ops = []
+
     # step 1: generate ordvals
 
     ordval = {}
     for i in unsorted:
         ordval[i] = sorted.index(i)
 
-    
-    bg = biog(None, unsorted, order, ordval)
+    # find the largest set of in-order elements
+    # unsorted and sorted should be equal sets
+    sorted_lim = [i for i in sorted if i in unsorted]
+    ordered = biog(None, unsorted, sorted_lim, ordval)
+
+    # generate list of unordered elements
+    unordered = [i for i in unsorted if i not in ordered]
+
+    # sort the unordered elements, keeping track of the state of the list in the process
+    while len(unordered) > 0:
+        e = unordered.pop(0)
+        old_idx = unsorted.index(e)
+        last_se = ordered[0]
+
+        if ordval[e] < ordval[last_se]: # beginning
+            new_idx = unsorted.index(last_se)
+            ops.append(("mov", old_idx, new_idx))
+
+            unsorted.pop(old_idx)
+            unsorted.insert(new_idx, e)
+
+            ordered.insert(0, e)
+            continue
+
+        for next_se in ordered[1:]: # middle
+            if ordval[last_se] < ordval[e] and ordval[e] < ordval[next_se]:
+                # sort main list
+                new_idx = unsorted.index(last_se) + 1
+                ops.append(("mov", old_idx, new_idx))
+
+                unsorted.pop(old_idx)
+                if old_idx < new_idx:
+                    unsorted.insert(new_idx-1, e)
+                else:
+                    unsorted.insert(new_idx, e)
+
+                # update ordered list
+                ordered.insert(ordered.index(last_se) + 1, e)
+                break
+            last_se = next_se
+
+        else: # last
+            if ordval[last_se] < ordval[e]:
+                new_idx = unsorted.index(last_se) + 1
+                ops.append(("mov", old_idx, new_idx))
+
+                unsorted.pop(old_idx)
+                if old_idx < new_idx:
+                    unsorted.insert(new_idx-1, e)
+                else:
+                    unsorted.insert(new_idx, e)
+
+                # update ordered list
+                ordered.insert(ordered.index(last_se) + 1, e)
+
+    return unsorted, ops
 
 
 
@@ -87,7 +161,11 @@ def biog(initial_element, partial_list, sorted, ordval):
             break
 
         if partial_list.index(smallest) == len(partial_list)-1: # smallest element is at end of list
-            groups.append([initial_element, smallest])
+            if initial_element:
+                groups.append([initial_element, smallest])
+            else:
+                groups.append([smallest])
+
             traversed.add(smallest)
         else:
             group = biog(smallest, partial_list[partial_list.index(smallest)+1:], sorted, ordval)
@@ -121,23 +199,3 @@ if __name__ == "__main__":
 
     order = ["D", "A", "C", "E", "B"]
     #order = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "", "Z"]
-    
-    unsorted = order.copy()
-
-    import random
-    from time import perf_counter
-    for _ in range(100):
-        random.shuffle(unsorted)
-        print(f"{unsorted=}")
-
-        s = perf_counter()
-
-        ordval = sort(unsorted, order)
-        bg = biog(None, unsorted, order, ordval)
-
-        e = perf_counter()
-
-        print(f"{bg=}")
-        print(f"Took {e-s} seconds")
-
-        input()
