@@ -182,6 +182,8 @@ def biog(initial_element, partial_list, sorted, ordval):
 if __name__ == "__main__":
     import random
     from time import perf_counter
+    from blessings import Terminal
+    term = Terminal()
 
     size_of_array = 50
     total_exec_time = 0
@@ -192,13 +194,19 @@ if __name__ == "__main__":
         order = data.copy()
         random.shuffle(data)
         
+        with term.location(0, term.height-3):
+            print(f"Order: {order}", end='\r')
+        with term.location(0, term.height-2):
+            print(f"Data:  {data}", end='\r')
+        
         s = perf_counter()
         sorted, ops = main(data, order)
         e = perf_counter()
 
         total_exec_time += e - s
 
-        print(f"iteration: {iteration+1} avg execution time: {total_exec_time/(iteration+1)}", end='\r')
+        with term.location(0, term.height-1):
+            print(f"iteration: {iteration+1} avg execution time: {total_exec_time/(iteration+1)}", end='\r')
 
         if sorted != order:
             print("Error: data sorted incorretly:")
