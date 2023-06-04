@@ -1,4 +1,4 @@
-# an algorithm that attempts sort an array arbitrarily using the least number of move operations
+# an algorithm that attempts to sort an array arbitrarily using the least number of move operations
 # for this problem, moving an array element from any index n to m is considered a single operation
 # other measures of time complexity are not considered
 
@@ -20,8 +20,8 @@ def main(existing, update):
         else:
             idx += 1
 
-    print(f"{existing=}")
-    print(f"{update=}")
+    #print(f"{existing=}")
+    #print(f"{update=}")
     
 
     # Step 2: sort existing items
@@ -29,8 +29,8 @@ def main(existing, update):
 
     ops.extend(operations)
     
-    print(f"{existing=}")
-    print(f"{ops=}")
+    #print(f"{existing=}")
+    #print(f"{ops=}")
 
 
     # Step 3: add missing items to the correct indexes
@@ -39,10 +39,10 @@ def main(existing, update):
             ops.append(("add", e, idx))
             existing.insert(idx, e)
 
-    print(f"{existing=}")
-    print(f"{ops=}")
+    #print(f"{existing=}")
+    #print(f"{ops=}")
 
-    return ops
+    return existing, ops
 
 
 
@@ -141,7 +141,7 @@ def biog(initial_element, partial_list, sorted, ordval):
     complete_set = set(partial_list)
     traversed = set()
 
-    if initial_element:
+    if initial_element is not None:
         groups = [[initial_element]]
         initial_ordval = ordval[initial_element]
     else:
@@ -154,14 +154,14 @@ def biog(initial_element, partial_list, sorted, ordval):
         for e in partial_list:
             if ordval[e] < initial_ordval or e in traversed:
                 continue
-            if not smallest or ordval[e] < ordval[smallest]:
+            if smallest is None or ordval[e] < ordval[smallest]:
                 smallest = e
 
-        if not smallest:
+        if smallest is None:
             break
 
         if partial_list.index(smallest) == len(partial_list)-1: # smallest element is at end of list
-            if initial_element:
+            if initial_element is not None:
                 groups.append([initial_element, smallest])
             else:
                 groups.append([smallest])
@@ -170,7 +170,7 @@ def biog(initial_element, partial_list, sorted, ordval):
         else:
             group = biog(smallest, partial_list[partial_list.index(smallest)+1:], sorted, ordval)
             traversed.update(group)
-            if initial_element:
+            if initial_element is not None:
                 group.insert(0, initial_element)
             groups.append(group)
 
@@ -189,13 +189,36 @@ def biog(initial_element, partial_list, sorted, ordval):
 
 
 
-
-
 if __name__ == "__main__":
-    order = ["b", "d", "e", "a", "c", "g", "f"]
-    existing = ["z", "h", "a", "c", "e", "d", "y"]
-    
-    main(existing, order)
+    import random
+    from time import perf_counter
+
+    size_of_array = 50
+
+    total_exec_time = 0
+
+    for iteration in range(1000000):
+        data = [i for i in range(size_of_array)]
+        random.shuffle(data)
+        order = data.copy()
+        random.shuffle(data)
+        
+        s = perf_counter()
+        sorted, ops = main(data, order)
+        e = perf_counter()
+
+        total_exec_time += e - s
+
+        print(f"iteration: {iteration+1} avg execution time: {total_exec_time/(iteration+1)}", end='\r')
+
+        if sorted != order:
+            print("Error: data sorted incorretly:")
+            print(f"{data=}")
+            print(f"{order=}")
+            print(f"{sorted=}")
+            break
+
+    print()
 
     order = ["D", "A", "C", "E", "B"]
     #order = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "", "Z"]
