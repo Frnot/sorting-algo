@@ -1,3 +1,6 @@
+# min-op sorting algo
+# v1.0
+
 # an algorithm that attempts to sort an array arbitrarily using the least number of move operations
 # for this problem, moving an array element from any index n to m is considered a single operation
 # other measures of time complexity are not considered
@@ -20,27 +23,15 @@ def main(existing, update):
         else:
             idx += 1
 
-    #print(f"{existing=}")
-    #print(f"{update=}")
-    
-
     # Step 2: sort existing items
     existing, operations = sort(existing, update)
-
     ops.extend(operations)
-    
-    #print(f"{existing=}")
-    #print(f"{ops=}")
-
 
     # Step 3: add missing items to the correct indexes
     for idx,e in enumerate(update):
         if e not in existing:
             ops.append(("add", e, idx))
             existing.insert(idx, e)
-
-    #print(f"{existing=}")
-    #print(f"{ops=}")
 
     return existing, ops
 
@@ -66,7 +57,6 @@ def sort(unsorted, sorted):
     ops = []
 
     # step 1: generate ordvals
-
     ordval = {}
     for i in unsorted:
         ordval[i] = sorted.index(i)
@@ -194,7 +184,6 @@ if __name__ == "__main__":
     from time import perf_counter
 
     size_of_array = 50
-
     total_exec_time = 0
 
     for iteration in range(1000000):
@@ -220,5 +209,5 @@ if __name__ == "__main__":
 
     print()
 
-    order = ["D", "A", "C", "E", "B"]
+    #order = ["D", "A", "C", "E", "B"]
     #order = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "", "Z"]
