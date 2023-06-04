@@ -152,6 +152,9 @@ def biggest_inorder_group(partial_list):
 
 
 if __name__ == "__main__":
+    main()
+    quit()
+
     for _ in range(10000):
         order,ordered = main()
         if order != ordered:
